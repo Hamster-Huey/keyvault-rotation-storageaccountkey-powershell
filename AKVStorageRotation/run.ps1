@@ -55,6 +55,8 @@ function RoatateSecret($keyVaultName,$secretName){
 
     #Regenerate alternate access key in provider
     $newAccessKeyValue = (RegenerateKey $alternateCredentialId $providerAddress)[-1]
+    $storageAccountName = ($providerAddress -split '/')[8]
+    $newConnectionString = -join @("DefaultEndpointsProtocol=https;AccountName=", $storageAccountName, ";AccountKey=", $newAccessKeyValue, ";EndpointSuffix=core.windows.net")
     Write-Host "Access key regenerated. Access Key Id: $alternateCredentialId Resource Id: $providerAddress"
 
     #Add new access key to Key Vault
@@ -64,7 +66,7 @@ function RoatateSecret($keyVaultName,$secretName){
     $newSecretVersionTags.ProviderAddress = $providerAddress
 
     $expiryDate = (Get-Date).AddDays([int]$validityPeriodDays).ToUniversalTime()
-    AddSecretToKeyVault $keyVAultName $secretName $newAccessKeyValue $expiryDate $newSecretVersionTags
+    AddSecretToKeyVault $keyVAultName $secretName $newConnectionString $expiryDate $newSecretVersionTags
 
     Write-Host "New access key added to Key Vault. Secret Name: $secretName"
 }
